@@ -1,0 +1,32 @@
+#! /usr/bin/env bash
+
+SRC_DIRECTORY=$(pwd);
+
+# see if docker needs to be set up
+DOCKER_COUNT=$(docker-machine ls | grep default | grep -i running | wc -l | xargs);
+if [ "$DOCKER_COUNT" -ne "1" ]; then
+  docker-machine start default;
+fi
+
+# check if docker is up and running
+DOCKER_COUNT=$(docker-machine ls | grep default | grep -i running | wc -l | xargs);
+if [ "$DOCKER_COUNT" -eq "1" ]; then
+    # make sure docker commands will work in the shell
+    eval $(docker-machine env);
+  
+    # remove stopped docker containers (if any)
+    CONTAINER_COUNT=$(docker ps -a -q | wc -l | xargs);
+    if [ "$CONTAINER_COUNT" -ne "0" ]; then
+        docker rm $(docker ps -a -q)
+    fi
+
+    docker run                  \
+        -t -i                   \
+        --name "ubuntu-python"  \
+        -e HOST_IP=$(ifconfig en0 | awk '/ *inet /{print $2}') \
+        -v $SRC_DIRECTORY:/src \
+        "ubuntu-python" /src/.start.sh;
+
+    # remove our running container
+    docker rm $(docker ps -a -q) > /dev/null;
+fi
