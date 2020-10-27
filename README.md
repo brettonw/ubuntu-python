@@ -1,1 +1,1 @@
-# ubunto-python
+# ubuntu-python
