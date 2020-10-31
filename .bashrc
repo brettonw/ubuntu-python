@@ -11,7 +11,3 @@ set +a
 function ec {
     nano $*;
 }
-
-function python {
-    python3.8 $*;
-}
